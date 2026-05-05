@@ -1,0 +1,120 @@
+{% extends 'base.html' %}
+{% block title %}{{ estudiante.nombre }} — Carnets USL{% endblock %}
+
+{% block extra_css %}
+.detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+@media (max-width: 680px) { .detail-grid { grid-template-columns: 1fr; } }
+.student-header { display: flex; align-items: center; gap: 1.2rem; margin-bottom: 1.5rem; }
+.student-foto-lg {
+    width: 80px; height: 80px; border-radius: 50%;
+    object-fit: cover; border: 3px solid var(--accent);
+}
+.student-foto-placeholder-lg {
+    width: 80px; height: 80px; border-radius: 50%;
+    background: var(--surface2); border: 3px solid var(--border);
+    display: flex; align-items: center; justify-content: center; font-size: 2rem;
+}
+.student-info h2 { font-size: 1.3rem; font-weight: 700; }
+.student-info p { color: var(--text2); font-size: 0.85rem; font-family: 'DM Mono', monospace; }
+.info-row { display: flex; justify-content: space-between; align-items: center; padding: 0.75rem 0; border-bottom: 1px solid var(--border); font-size: 0.9rem; }
+.info-row:last-child { border-bottom: none; }
+.info-label { color: var(--text2); }
+.qr-box { text-align: center; padding: 1rem; }
+.qr-box img { border-radius: 8px; border: 1px solid var(--border); background: white; padding: 8px; }
+.qr-url { font-family: 'DM Mono', monospace; font-size: 0.72rem; color: var(--text2); word-break: break-all; margin-top: 0.75rem; }
+.page-actions { display: flex; gap: 0.75rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
+.scan-row { display: flex; justify-content: space-between; font-size: 0.85rem; padding: 0.6rem 0; border-bottom: 1px solid var(--border); color: var(--text2); }
+.scan-row:last-child { border-bottom: none; }
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="page-actions">
+        <a href="{% url 'admin_panel' %}" class="btn btn-ghost">← Volver</a>
+        <a href="{% url 'editar_estudiante' estudiante.pk %}" class="btn btn-primary">Editar</a>
+        <a href="{% url 'toggle_activo' estudiante.pk %}" class="btn {% if estudiante.activo %}btn-warning{% else %}btn-success{% endif %}">
+            {% if estudiante.activo %}Desactivar{% else %}Activar{% endif %}
+        </a>
+        <a href="{% url 'eliminar_estudiante' estudiante.pk %}" class="btn btn-danger">Eliminar</a>
+        <a href="{{ url_carnet }}" target="_blank" class="btn btn-ghost">Ver carnet ↗</a>
+        <button onclick="copiarLink()" class="btn btn-ghost" id="btn-copiar">📋 Copiar link</button>
+    </div>
+
+    <div class="detail-grid">
+        <!-- Info -->
+        <div class="card">
+            <div class="student-header">
+                {% if estudiante.foto %}
+                    <img src="{{ estudiante.foto.url }}" class="student-foto-lg" alt="">
+                {% else %}
+                    <div class="student-foto-placeholder-lg">👤</div>
+                {% endif %}
+                <div class="student-info">
+                    <h2>{{ estudiante.nombre }}</h2>
+                    <p>{{ estudiante.identificacion }}</p>
+                    {% if estudiante.activo %}
+                        <span class="badge badge-green" style="margin-top:0.4rem;">● Activo</span>
+                    {% else %}
+                        <span class="badge badge-red" style="margin-top:0.4rem;">● Inactivo</span>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="info-row">
+                <span class="info-label">Carrera</span>
+                <span>{{ estudiante.carrera }}</span>
+            </div>
+
+            <div class="info-row">
+                <span class="info-label">Validez</span>
+                <span>{{ estudiante.fecha_validez|date:"d/m/Y" }}</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Creado</span>
+                <span>{{ estudiante.fecha_creacion|date:"d/m/Y" }}</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Token</span>
+                <span style="font-family:'DM Mono',monospace;font-size:0.75rem;color:var(--text2);">{{ estudiante.token|truncatechars:20 }}</span>
+            </div>
+        </div>
+
+        <!-- QR -->
+        <div class="card">
+            <h3 style="font-size:1rem;margin-bottom:1rem;font-weight:600;">Código QR</h3>
+            <div class="qr-box">
+                <img src="data:image/png;base64,{{ qr_base64 }}" width="200" height="200" alt="QR">
+                <p class="qr-url">{{ url_verificacion }}</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Historial -->
+    {% if escaneos %}
+    <div class="card" style="margin-top:1.5rem;">
+        <h3 style="font-size:1rem;margin-bottom:1rem;font-weight:600;">Últimos escaneos</h3>
+        {% for s in escaneos %}
+        <div class="scan-row">
+            <span>{{ s.fecha_hora|date:"d/m/Y H:i" }}</span>
+            <span>{{ s.ip_address|default:"—" }}</span>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+</div>
+
+<script>
+function copiarLink() {
+    navigator.clipboard.writeText("{{ url_carnet }}").then(() => {
+        const btn = document.getElementById('btn-copiar');
+        btn.textContent = '✅ Copiado';
+        btn.style.color = 'var(--green)';
+        setTimeout(() => {
+            btn.textContent = '📋 Copiar link';
+            btn.style.color = '';
+        }, 2000);
+    });
+}
+</script>
+
+{% endblock %}

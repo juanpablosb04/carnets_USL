@@ -1,0 +1,318 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Carnet — {{ estudiante.nombre }}</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        html, body {
+            height: 100%;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #f0f4f8;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1.5rem 1rem;
+        }
+
+        /* ── CARNET ── */
+        .carnet {
+            width: 100%;
+            max-width: 400px;
+            background: #ffffff;
+            border-radius: 24px;
+            overflow: hidden;
+            box-shadow: 0 24px 60px rgba(0, 63, 133, 0.18), 0 4px 16px rgba(0,0,0,0.08);
+        }
+
+        /* ── HEADER ── */
+        .carnet-header {
+            position: relative;
+            width: 100%;
+            /* Altura relativa al ancho para mantener proporciones en cualquier pantalla */
+            padding-top: 45%;
+            overflow: hidden;
+        }
+
+        .carnet-header img.header-bg {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: center top;
+            display: block;
+        }
+
+        /* ── FOTO ── */
+        .foto-wrap {
+            display: flex;
+            justify-content: center;
+            margin-top: -60px;
+            position: relative;
+            z-index: 2;
+            padding: 0 1rem;
+        }
+
+        .foto-container {
+            width: min(140px, 36vw);
+            height: min(160px, 41vw);
+            border-radius: 16px;
+            border: 4px solid #00c395;
+            overflow: hidden;
+            background: #e8f0fe;
+            box-shadow: 0 8px 24px rgba(0,63,133,0.2);
+            flex-shrink: 0;
+        }
+
+        .foto-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: top center;
+            display: block;
+        }
+
+        .foto-placeholder {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #e8f0fe;
+            color: #003f85;
+            font-size: clamp(2.5rem, 8vw, 4rem);
+        }
+
+        /* ── CUERPO ── */
+        .carnet-body {
+            padding: 1rem 1.4rem 1.4rem;
+            text-align: center;
+        }
+
+        .student-name {
+            font-size: clamp(1.2rem, 5vw, 1.5rem);
+            font-weight: 800;
+            color: #003f85;
+            line-height: 1.2;
+            margin-top: 0.9rem;
+        }
+
+        .divider {
+            width: 48px;
+            height: 3px;
+            background: #00c395;
+            border-radius: 2px;
+            margin: 0.65rem auto;
+        }
+
+        .carrera-text {
+            font-size: clamp(0.82rem, 3.5vw, 0.95rem);
+            font-weight: 600;
+            color: #003f85;
+            line-height: 1.4;
+        }
+
+        /* ── INFO ROW ── */
+        .info-row {
+            display: flex;
+            align-items: stretch;
+            margin: 1.2rem 0 1rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 14px;
+            overflow: hidden;
+        }
+
+        .info-col {
+            flex: 1;
+            padding: 0.75rem 0.6rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            min-width: 0;
+        }
+
+        .info-col:first-child {
+            border-right: 1px solid #e2e8f0;
+        }
+
+        .info-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: rgba(0, 195, 149, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            font-size: 0.9rem;
+        }
+
+        .info-data {
+            text-align: left;
+            min-width: 0;
+            flex: 1;
+        }
+
+        .info-label {
+            font-size: clamp(0.58rem, 2vw, 0.65rem);
+            font-weight: 600;
+            color: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+        }
+
+        .info-value {
+            font-size: clamp(0.78rem, 3vw, 0.85rem);
+            font-weight: 700;
+            color: #003f85;
+            margin-top: 0.1rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .estado-activo { color: #00c395 !important; }
+        .estado-inactivo { color: #ef4444 !important; }
+
+        .estado-dot {
+            display: inline-block;
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            margin-right: 3px;
+            vertical-align: middle;
+            flex-shrink: 0;
+        }
+
+        .dot-activo { background: #00c395; box-shadow: 0 0 5px #00c395; }
+        .dot-inactivo { background: #ef4444; box-shadow: 0 0 5px #ef4444; }
+
+        .validez-label {
+            font-size: clamp(0.65rem, 2.5vw, 0.72rem);
+            color: #64748b;
+            margin-top: 0.2rem;
+        }
+
+        .validez-value {
+            font-size: clamp(0.82rem, 3vw, 0.9rem);
+            font-weight: 700;
+            color: #003f85;
+            white-space: nowrap;
+        }
+
+        /* ── QR ── */
+        .qr-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.4rem;
+            padding-bottom: 0.4rem;
+        }
+
+        .qr-section img {
+            border-radius: 10px;
+            padding: 6px;
+            background: white;
+            border: 1px solid #e2e8f0;
+            width: min(130px, 34vw);
+            height: min(130px, 34vw);
+        }
+
+        .qr-label {
+            font-size: 0.75rem;
+            color: #94a3b8;
+            font-weight: 500;
+        }
+
+        /* ── FOOTER ── */
+        .carnet-footer {
+            display: flex;
+            height: 10px;
+        }
+
+        .footer-blue  { flex: 1; background: #003f85; }
+        .footer-green { width: 40px; background: #00c395; }
+        .footer-orange { width: 40px; background: #ff730a; }
+    </style>
+</head>
+<body>
+    <div class="carnet">
+
+        <!-- Header imagen -->
+        <div class="carnet-header">
+            <img class="header-bg" src="{% static 'estudiantes/img/header_carnet.png' %}" alt="USL">
+        </div>
+
+        <!-- Foto estudiante -->
+        <div class="foto-wrap">
+            <div class="foto-container">
+                {% if estudiante.foto %}
+                    <img src="{{ estudiante.foto.url }}" alt="{{ estudiante.nombre }}">
+                {% else %}
+                    <div class="foto-placeholder">👤</div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Datos -->
+        <div class="carnet-body">
+            <div class="student-name">{{ estudiante.nombre }}</div>
+
+            <div class="divider"></div>
+
+            <div class="carrera-text">{{ estudiante.carrera }}</div>
+
+            <!-- Info row -->
+            <div class="info-row">
+                <div class="info-col">
+                    <div class="info-icon">👤</div>
+                    <div class="info-data">
+                        <div class="info-label">Identificación</div>
+                        <div class="info-value">{{ estudiante.identificacion }}</div>
+                    </div>
+                </div>
+
+                <div class="info-col">
+                    <div class="info-icon">🛡️</div>
+                    <div class="info-data">
+                        {% if estudiante.activo %}
+                            <div class="info-value estado-activo">
+                                <span class="estado-dot dot-activo"></span>Activo
+                            </div>
+                        {% else %}
+                            <div class="info-value estado-inactivo">
+                                <span class="estado-dot dot-inactivo"></span>Inactivo
+                            </div>
+                        {% endif %}
+                        <div class="validez-label">Válido hasta</div>
+                        <div class="validez-value">{{ estudiante.fecha_validez|date:"d/m/Y" }}</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- QR -->
+            <div class="qr-section">
+                <img src="data:image/png;base64,{{ qr_base64 }}" alt="QR">
+                <div class="qr-label">Verificación</div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="carnet-footer">
+            <div class="footer-blue"></div>
+            <div class="footer-green"></div>
+            <div class="footer-orange"></div>
+        </div>
+
+    </div>
+</body>
+</html>
