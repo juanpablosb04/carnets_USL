@@ -224,3 +224,13 @@ def eliminar_estudiante(request, pk):
         return redirect('admin_panel')
 
     return render(request, 'estudiantes/confirmar_eliminar.html', {'estudiante': estudiante})
+
+@login_required(login_url='/login/')
+def desactivar_vencidos(request):
+    if request.method == 'POST':
+        hoy = timezone.now().date()
+        vencidos = Estudiante.objects.filter(fecha_validez__lt=hoy, activo=True)
+        total = vencidos.count()
+        vencidos.update(activo=False)
+        messages.success(request, f'{total} carnet(s) vencido(s) desactivado(s).')
+    return redirect('admin_panel')

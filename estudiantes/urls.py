@@ -17,6 +17,8 @@ urlpatterns = [
     path('admin-panel/<int:pk>/editar/', views.editar_estudiante, name='editar_estudiante'),
     path('admin-panel/<int:pk>/toggle/', views.toggle_activo, name='toggle_activo'),
     path('admin-panel/<int:pk>/eliminar/', views.eliminar_estudiante, name='eliminar_estudiante'),
+    path('admin-panel/desactivar-vencidos/', views.desactivar_vencidos, name='desactivar_vencidos'),
+
 
     # Raíz redirige al panel
     path('', views.login_view, name='home'),

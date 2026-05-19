@@ -15,25 +15,25 @@ class EstudianteForm(forms.ModelForm):
 
     class Meta:
         model = Estudiante
-        fields = ['nombre', 'identificacion', 'carrera', 'foto', 'activo', 'fecha_validez']
+        fields = ['nombre', 'identificacion', 'carrera', 'foto', 'fecha_validez']
         widgets = {
             'nombre': forms.TextInput(attrs={
                 'class': 'form-control',
                 'placeholder': 'Nombre completo'
             }),
             'identificacion': forms.TextInput(attrs={
-                'class': 'form-control',
-                'placeholder': 'Número de identificación'
+            'class': 'form-control',
+            'placeholder': 'Número de identificación',
+            'inputmode': 'numeric',
+            'pattern': '[0-9]*',
+            'oninput': 'this.value = this.value.replace(/[^0-9]/g, "")'
             }),
             'carrera': forms.Select(attrs={
                 'class': 'form-control',
             }),
             'foto': forms.FileInput(attrs={
-                'class': 'form-control',
-                'accept': 'image/*'
-            }),
-            'activo': forms.CheckboxInput(attrs={
-                'class': 'form-check-input'
+            'class': 'file-input-hidden',
+            'accept': 'image/*'
             }),
         }
         labels = {
@@ -44,6 +44,16 @@ class EstudianteForm(forms.ModelForm):
             'activo': 'Carnet Activo',
         }
 
+def clean_identificacion(self):
+    data = self.cleaned_data.get('identificacion', '')
+
+    if not data.isdigit():
+        raise forms.ValidationError("Solo se permiten números.")
+
+    if Estudiante.objects.filter(identificacion=data).exclude(pk=self.instance.pk).exists():
+        raise forms.ValidationError("Esta identificación ya existe.")
+
+    return data
 
 class LoginForm(forms.Form):
     username = forms.CharField(
